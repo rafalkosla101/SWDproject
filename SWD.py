@@ -1,72 +1,52 @@
 from typing import List, Tuple, Set, Dict
-# totalnie do dokończenia, ale muszę iść spać xd
-def sorting_points(points: List[Tuple[int]]) -> List[Tuple[int]]:
+#totalnie do dokończenia, ale muszę iść spać xd
+# def sorting_points(points: List[Tuple[int]]) -> List[Tuple[int]]:
+#
+#     # ułożenie punktów w liście w zależności od odpegłości od punktu (0,0)
+#     # sortowanie bąbelkowe
+#     for i in range(len(points)-1):
+#         for j in range(len(points)-i-1):
+#             if points[j][0]**2 + points[j][1]**2 > points[j+1][0]**2 + points[j+1][1]**2:
+#                 temp = points[j]
+#                 points[j] = points[j+1]
+#                 points[j+1] = temp
+#     # print(points)
+#     return points
 
-    # ułożenie punktów w liście w zależności od odpegłości od punktu (0,0)
-    # sortowanie bąbelkowe
-    for i in range(len(points)-1):
-        for j in range(len(points)-i-1):
-            if points[j][0]**2 + points[j][1]**2 > points[j+1][0]**2 + points[j+1][1]**2:
-                temp = points[j]
-                points[j] = points[j+1]
-                points[j+1] = temp
-    return points
+def sorting_points(points: List[Tuple[int]]) -> List[Tuple[int]]:
+    abc = sorted(points,key = lambda x: (x[0]**2 + x[1]**2)**0.5)
+    # print(abc)
+    return abc
 
 def divide_into_groups(points: List[Tuple[int]], limit: int) -> Tuple[List[Tuple[int]]]:
 
-    def help_divide(points: List[Tuple[int]]) -> List[Tuple[int]]:
-        considered = points[0]
-        set_a = [points]
-
-        # wyznaczamy punkty niezależne
-        while len(set_a) == 1:
-            set_a = [considered]
-            for point in points[1:]:
-                if (point[0] > considered[0]) ^ (point[1] > considered[1]):
-                    set_a.append(point)
-            points = points[1:]
-            considered = points[0]
-
-        set_better = [set_a[0]]
-
-        # co jeśli jednak nie są niezależne?
-        # sprawdzamy czy nie mają którejś współrzędnej tej samej
-        for a_elem in set_a[1:]:
-            choice = True
-            for b_elem in set_better:
-                if a_elem[0] == b_elem[0] or a_elem[1] == b_elem[1]:
-                    choice = False
-                if a_elem[0] == b_elem[1] or a_elem[1] == b_elem[0]:
-                    choice = False
-                # if a_elem == (2, 9):
-                #     a = a_elem[0] > b_elem[0]
-                #     b = a_elem[1] > b_elem[1]
-                # if not((a_elem[0] > b_elem[1]) ^ (a_elem[1] < b_elem[0])):
-                #     choice = False
-            if choice:
-                set_better.append(a_elem)
-
-        return set_better
-
-    # podział punktów na grupy: idealne, antyidealne i rozpatrywane
-    # ideal_points = points[:limit]
-    # nadir_points = points[-limit:]
     considered_points = points[limit:-limit]
-
+    #ograniczenie zbiorów a następnie podzielenie ich
     candidates_a1 = considered_points[:len(considered_points)//2]
     candidates_a2 = considered_points[len(considered_points)//2:]
 
-    a1 = help_divide(candidates_a1)
-    a2 = help_divide(candidates_a2)
+    out1 = check_if_points_independant(candidates_a1)
+    #usuniecie punktow zaleznych z a1
+    a1 = [i for i in candidates_a1 if i not in out1]
+    out2 = check_if_points_independant(candidates_a2)
+    u = out2
+    #usuniecie punktow zaleznych z a2
+    a2 = [i for i in candidates_a2 if i not in out2]
+    return a1, a2, u
 
-    considered_points = list(set(considered_points) - set(a1)) + list(set(a1) - set(considered_points))
-    considered_points = list(set(considered_points) - set(a2)) + list(set(a2) - set(considered_points))
-    
-    considered_points = sorting_points(considered_points)
 
-    # u = considered_points
+def check_if_points_independant(points: List[Tuple[int]]):
+    # funkcja sprawdzająca  kolejny punkt po punkcie czy kazdy z nich jets punktem nie zaleznym w danym podzbiorze
+    index = []
+    for i in points:
+        for j in points:
+            if i[0] <= j[0] and i[1] <= j[1] and j not in index and i != j:
+                index.append(j)
+            elif i[0] >= j[0] and i[1] >= j[1] and i not in index and i != j:
+                index.append(i)
+    return index
 
-    return a1, a2, considered_points
+
 
 def field_of_square(A1: List[Tuple[int]], A2: List[Tuple[int]], u: List[Tuple[int]]):
 
@@ -116,11 +96,10 @@ def ranking_creating(areas):
 
 points = [(0, 2), (1, 2), (1, 5), (2, 3), (2, 9), (3, 1), (3, 6), (3, 8), (4, 3), (4, 5), (4, 9), (5, 7), (6, 9), (6, 10), (7, 3), (7, 5), (7, 10), (8, 8), (9, 2), (9, 5), (9, 7), (9, 9), (10, 4), (10, 8), (10, 9), (11, 6), (11, 10), (12, 1), (12, 4), (12, 7)]
 limit = (len(points)//4) + 1
-sorting_points(points)
+points = sorting_points(points)
 A1, A2, U = divide_into_groups(points, limit)
 areas = field_of_square(A1, A2, U)
 areas = standardization_of_squares(areas)
-print(areas)
 areas = ranking_creating(areas)
 
 
