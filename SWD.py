@@ -1,22 +1,21 @@
 from typing import List, Tuple, Set, Dict
-#totalnie do dokończenia, ale muszę iść spać xd
-# def sorting_points(points: List[Tuple[int]]) -> List[Tuple[int]]:
-#
-#     # ułożenie punktów w liście w zależności od odpegłości od punktu (0,0)
-#     # sortowanie bąbelkowe
-#     for i in range(len(points)-1):
-#         for j in range(len(points)-i-1):
-#             if points[j][0]**2 + points[j][1]**2 > points[j+1][0]**2 + points[j+1][1]**2:
-#                 temp = points[j]
-#                 points[j] = points[j+1]
-#                 points[j+1] = temp
-#     # print(points)
-#     return points
+
+class Areas:
+    '''
+    Klasa służaca do obrazowania relacji (pole jakie tworzą punkty)
+    między dwoma zbiorami: A1 i A2
+    '''
+    def __init__(self, a1, a2, area):
+        self.a1 = a1
+        self.a2 = a2
+        self.area = area
 
 def sorting_points(points: List[Tuple[int]]) -> List[Tuple[int]]:
-    abc = sorted(points,key = lambda x: (x[0]**2 + x[1]**2)**0.5)
-    # print(abc)
-    return abc
+    '''
+    Sortowanie punktów w zależności od odległości od punktu (0,0)
+    '''
+
+    return sorted(points, key=lambda x: (x[0] ** 2 + x[1] ** 2) ** 0.5)
 
 def divide_into_groups(points: List[Tuple[int]], limit: int) -> Tuple[List[Tuple[int]]]:
 
@@ -46,61 +45,70 @@ def check_if_points_independant(points: List[Tuple[int]]):
                 index.append(i)
     return index
 
+def field_of_square(A1: List[Tuple[int]], A2: List[Tuple[int]], U: List[Tuple[int]]) -> Dict[Tuple[int], List[object]]:
 
+    '''
+    funkcja licząca pola dla wyznaczonych kwadratów w zależności od danego U
+    '''
 
-def field_of_square(A1: List[Tuple[int]], A2: List[Tuple[int]], u: List[Tuple[int]]):
+    def help_square(A1: List[Tuple[int]], A2: List[Tuple[int]], u: Tuple[int]) -> List[object]:
 
-    def help_square(A1: List[Tuple[int]], A2: List[Tuple[int]], u: Tuple[int]):
+        '''
+        Funkcja pomocnicza, liczy pola dla konkretnego, jednego u
+        '''
+
         areas = []
         for a1 in A1:
             for a2 in A2:
                 if u[0] > max(a1[0], a2[0]): continue
                 if u[1] > max(a1[1], a2[1]): continue
                 area = abs(a2[1] - a1[1]) * abs(a2[0] - a1[0])
-                areas.append([(a1, a2), area])
+                areas.append(Areas(a1, a2, area))
         return areas
 
     areas = {u:help_square(A1, A2, u) for u in U }
-    return areas  
-
-def standardization_of_squares(areas):
-
-    help_sum = {}
-    for k, val in areas.items():
-        temp = [v[1] for v in val]
-        help_sum[k] = sum(temp)
-    temp = []
-    for keys, values in areas.items():
-        for val in values:
-            temp.append([val[0], val[1]/help_sum[keys]])
-        areas[keys] = temp
     return areas
 
-def ranking_creating(areas):
-    # temp = []
-    # for keys, values in areas.items():
-    #     for val in values:
-    #         temp.append([val[0], val[1]/help_sum[keys]])
-    #     areas[keys] = temp
-    # # return areas    
-    # for i in range(len(points)-1):
-    #     for j in range(len(points)-i-1):
-    #         if points[j][0]**2 + points[j][1]**2 > points[j+1][0]**2 + points[j+1][1]**2:
-    #             temp = points[j]
-    #             points[j] = points[j+1]
-    #             points[j+1] = temp
-    return
+def standardization_of_squares(areas: Dict[Tuple[int], List[object]]) -> Dict[Tuple[int], List[object]]:
 
+    '''
+    Funkcja standaryzująca pola kwadratow
+    '''
 
+    # utworzenie słownika pomocniczego klucz: u, wartość to suma pól dla danego u
+    help_sum = {}
+    for k, val in areas.items():
+        temp = [v.area for v in val]
+        help_sum[k] = sum(temp)
 
+    # uaktualnienie głównego słownika (standaryzacja)
+    for keys, values in areas.items():
+        for val in values:
+            val.area = val.area/help_sum[keys]
+    return areas
 
-points = [(0, 2), (1, 2), (1, 5), (2, 3), (2, 9), (3, 1), (3, 6), (3, 8), (4, 3), (4, 5), (4, 9), (5, 7), (6, 9), (6, 10), (7, 3), (7, 5), (7, 10), (8, 8), (9, 2), (9, 5), (9, 7), (9, 9), (10, 4), (10, 8), (10, 9), (11, 6), (11, 10), (12, 1), (12, 4), (12, 7)]
-limit = (len(points)//4) + 1
-points = sorting_points(points)
-A1, A2, U = divide_into_groups(points, limit)
-areas = field_of_square(A1, A2, U)
-areas = standardization_of_squares(areas)
-areas = ranking_creating(areas)
+def ranking_creating(areas: Dict[Tuple[int], List[object]]) -> Dict[Tuple[int], List[object]]:
+    '''
+    Posortowanie słownika klucz: u, wartość: lista punktów
+    tworząca pola wokół punktu u w zależności rosnącej względem pola kwadratu (area)
+    '''
 
+    for keys, values in areas.items():
+        values.sort(key=lambda x:x.area)
+    return areas
 
-a=1
+def main():
+
+    points = [(0, 2), (1, 2), (1, 5), (2, 3), (2, 9), (3, 1), (3, 6), (3, 8), (4, 3), (4, 5), (4, 9), (5, 7), (6, 9), (6, 10), (7, 3), (7, 5), (7, 10), (8, 8), (9, 2), (9, 5), (9, 7), (9, 9), (10, 4), (10, 8), (10, 9), (11, 6), (11, 10), (12, 1), (12, 4), (12, 7)]
+    limit = (len(points)//4) + 1
+    sorting_points(points)
+    A1, A2, U = divide_into_groups(points, limit)
+    areas = field_of_square(A1, A2, U)
+    areas = standardization_of_squares(areas)
+    areas = ranking_creating(areas)
+    a = 1
+
+if __name__ == "__main__":
+
+    main()
+
