@@ -60,9 +60,7 @@ def field_of_square(A1: List[Tuple[int]], A2: List[Tuple[int]], U: List[Tuple[in
         areas = []
         for a1 in A1:
             for a2 in A2:
-                # if u[0] > max(a1[0], a2[0]): continue
-                # if u[1] > max(a1[1], a2[1]): continue
-                area = abs(a2[1] - a1[1]) * abs(a2[0] - a1[0])
+                area = abs(max(a2[1], a1[1], u[1]) - min(a2[1], a1[1], u[1])) * abs(max(a2[0], a1[0], u[0]) - min(a2[0], a1[0], u[0]))
                 areas.append(Areas(a1, a2, area))
         return areas
 
