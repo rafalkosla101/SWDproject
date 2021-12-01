@@ -1,4 +1,5 @@
 from typing import List, Tuple, Set, Dict
+import numpy as np
 
 
 class Areas:
@@ -94,20 +95,91 @@ def ranking_creating(areas: Dict[Tuple[int], List[object]]) -> Dict[Tuple[int], 
     return areas
 
 
+def calc_weights(areas: Dict[Tuple[int], List[object]]) -> Dict[Tuple[int], List[float]]:
+
+    '''
+    Funkcja licząca wagi dla każdego punktu u
+    Zwraca słownik {punkt u: lista wag}
+    '''
+
+    weights: Dict[Tuple[int], List[float]] = {}
+
+    for u, fields in areas.items():
+        list_of_fields = [A.area for A in fields]
+        sum_of_fields = sum(list_of_fields)
+        weights_for_one_u = []
+
+        for A in fields:
+            weights_for_one_u.append(A.area/sum_of_fields)
+
+        weights[u] = weights_for_one_u
+        
+    return weights
+
+
+def calc_distance_coefficients(areas: Dict[Tuple[int], List[object]]) -> Dict[Tuple[int], List[float]]:
+    
+    '''
+    Funkcja licząca współczynniki odległości dla każdego punktu u
+    Zwraca słownik {punkt u: lista współczynników}
+    '''
+
+    distance_coefs: Dict[Tuple[int], List[float]] = {}
+
+    for u, fields in areas.items():
+        distance_coefs_for_one_u = []
+
+        for A in fields:
+            u_ = np.array([u[0], u[1]])
+            a1 = np.array([A.a1[0], A.a1[1]])
+            a2 = np.array([A.a2[0], A.a2[1]])
+            d1 = np.linalg.norm(u_ - a1)
+            d2 = np.linalg.norm(u_ - a2)
+            distance_coefs_for_one_u.append(d1/(2*d2))
+
+        distance_coefs[u] = distance_coefs_for_one_u
+
+    return distance_coefs
+
+def calc_score_function(weights: Dict[Tuple[int], List[float]], distance_coefs: Dict[Tuple[int], List[float]]) ->  Dict[Tuple[int], float]:
+    
+    '''
+    Funkcja licząca wartości scoringowe dla każdego punktu u
+    Zwraca słownik {punkt u: wartość scoringowa}
+    '''
+
+    ranking:  Dict[Tuple[int], float] = {}
+
+    for u in weights:
+        w = np.array(weights[u])
+        d = np.array(distance_coefs[u])
+        ranking[u] = w@d.T
+
+    return ranking
+
+
 def main():
     points = [(0, 2), (1, 2), (1, 5), (2, 3), (2, 9), (3, 1), (3, 6), (3, 8), (4, 3), (4, 5), (4, 9), (5, 7), (6, 9), (6, 10), (7, 3), (7, 5), (7, 10), (8, 8), (9, 2), (9, 5), (9, 7), (9, 9), (10, 4), (10, 8), (10, 9), (11, 6), (11, 10), (12, 1), (12, 4), (12, 7)]
     limit = (len(points)//4) + 1
     sorting_points(points)
     A1, A2, U = divide_into_groups(points, limit)
     areas = field_of_square(A1, A2, U)
-    areas = standardization_of_squares(areas)
-    areas = ranking_creating(areas)
-    # a = 1
-    result = []
-    for key, value in areas.items():
-        elem = "{0}: {1}".format(key, [(val.a1,val.a2) for val in value])
-        result.append(elem)
-    print(result)
+    
+    #areas = standardization_of_squares(areas)
+    #areas = ranking_creating(areas)
+    ## a = 1
+    #result = []
+    #for key, value in areas.items():
+    #    elem = "{0}: {1}".format(key, [(val.a1,val.a2) for val in value])
+    #    result.append(elem)
+    #print(result)
+
+    weights = calc_weights(areas)
+    distance_coefs = calc_distance_coefficients(areas)
+    ranking = calc_score_function(weights, distance_coefs)
+
+    print(ranking)
+
 
 
 if __name__ == "__main__":
