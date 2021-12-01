@@ -29,7 +29,7 @@ def divide_into_groups(points: List[Tuple[int]], limit: int) -> Tuple[List[Tuple
     #usuniecie punktow zaleznych z a1
     a1 = [i for i in candidates_a1 if i not in out1]
     out2 = check_if_points_independant(candidates_a2)
-    u = out2
+    u = out1
     #usuniecie punktow zaleznych z a2
     a2 = [i for i in candidates_a2 if i not in out2]
     return a1, a2, u
