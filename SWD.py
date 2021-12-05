@@ -135,7 +135,10 @@ def calc_distance_coefficients(areas: Dict[Tuple[int], List[object]]) -> Dict[Tu
             a2 = np.array([A.a2[0], A.a2[1]])
             d1 = np.linalg.norm(u_ - a1)
             d2 = np.linalg.norm(u_ - a2)
-            distance_coefs_for_one_u.append(d1/(2*d2))
+            if d1 > d2:
+                distance_coefs_for_one_u.append(d1/(d1 + d2))
+            else:
+                distance_coefs_for_one_u.append(d2/(d1 + d2))
 
         distance_coefs[u] = distance_coefs_for_one_u
 
@@ -154,6 +157,8 @@ def calc_score_function(weights: Dict[Tuple[int], List[float]], distance_coefs: 
         w = np.array(weights[u])
         d = np.array(distance_coefs[u])
         ranking[u] = w@d.T
+
+    ranking = {u: value for u, value in sorted(ranking.items(), key=lambda item: item[1])}
 
     return ranking
 
