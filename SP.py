@@ -1,5 +1,6 @@
 import numpy as np
 import SWD
+import matplotlib.pyplot as plt
 class PointData:
     def __init__(self,dist=None,points=[],normalized_dist=None):
         self.dist = dist
@@ -8,8 +9,13 @@ class PointData:
 
 
 def find_voronoi(A1,A2,points):
+    '''
+    Funkcja licząca odpowiednie punkty dla krzywych voronoja
+    Zwraca odpowiednie punkty dla wraz z znormalizowaną wartościa odległości
+    '''
     def line(x,a,b):
         return a*x + b
+    points = [i for i in points if i[0] >= min(A1[0],A2[0]) and i[1] >= min(A1[1],A2[1]) and i[0] <= max(A1[0],A2[0]) and i[1] <= max(A1[1],A2[1]) ]
 
     d = [(A2[0] - A1[0])/2,(A2[1] - A1[1])/2]
     d_sorted = sorted(d)
@@ -42,7 +48,13 @@ def find_voronoi(A1,A2,points):
         normalized_value = (actual_point[1] - min(A1[1],A2[1]))/(max(A1[1],A2[1])-min(A1[1],A2[1]))
         data.append(PointData(dist,tuple(point),normalized_value))
     return data
+
+
 def scoring(voronois):
+    '''
+    Funkcja licząca wartości scoringowe dla każdego punktu
+    Zwraca słownik {punkt u: wartość scoringowa}
+    '''
     scor = {}
     for voronoi in voronois:
         for point_v in voronoi:
@@ -54,29 +66,15 @@ def scoring(voronois):
 
 
 def main():
-    points = [(0, 2), (1, 2), (1, 5), (2, 3), (2, 9), (3, 1), (3, 6), (3, 8), (4, 3), (4, 5), (4, 9), (5, 7), (6, 9), (6, 10), (7, 3), (7, 5), (7, 10), (8, 8), (9, 2), (9, 5), (9, 7), (9, 9), (10, 4), (10, 8), (10, 9), (11, 6), (11, 10), (12, 1), (12, 4), (12, 7)]
+    points = [(0, 2), (1, 2), (1, 5), (2, 3), (2, 9), (3, 1), (3, 6), (3, 8), (4, 3), (4, 5), (3, 6), (5, 7), (6, 9), (6, 10), (5, 3), (7, 5), (7, 10), (8, 8), (9, 2), (9, 5), (9, 7), (9, 9), (10, 4), (10, 8), (10, 9), (11, 6), (11, 10), (12, 1), (12, 4), (12, 7)]
     limit = (len(points)//4) + 1
-    SWD.sorting_points(points)
     A1, A2, U = SWD.divide_into_groups(points, limit)
-    # areas = SWD.field_of_square(A1, A2, U)
-    # print(areas)
-    # areas = SWD.standardization_of_squares(areas)
-    # # areas = ranking_creating(areas)
-    # print(areas)
     data = []
     for a in A1:
         for b in A2:
             data.append(find_voronoi(a, b, U))
     sc = scoring(data)
     print(sc)
-    # A1 = [1,1]
-    # A2 = [5,3]
-    # A12 = [1,2]
-    # A22 = [7,6]
-    # U=[[4,3]]
-    # data2 = find_voronoi(A12,A22,U)
-    # data = find_voronoi(A1,A2,U)
-    # sc = scoring([data,data2])
 
 
 
